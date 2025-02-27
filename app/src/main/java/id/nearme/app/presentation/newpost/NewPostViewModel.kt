@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import id.nearme.app.domain.model.Location
 import id.nearme.app.domain.repository.PostRepository
+import id.nearme.app.domain.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,13 +15,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NewPostViewModel @Inject constructor(
-    private val postRepository: PostRepository
+    private val postRepository: PostRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(NewPostUiState())
     val uiState: StateFlow<NewPostUiState> = _uiState.asStateFlow()
 
     private var currentUserLocation: Location? = null
+
+    // Add a flag to check if the user needs to set a display name
+    val needsDisplayName: Boolean
+        get() = userRepository.getCurrentDisplayName() == "Anonymous"
 
     fun updateLocation(location: Location) {
         currentUserLocation = location

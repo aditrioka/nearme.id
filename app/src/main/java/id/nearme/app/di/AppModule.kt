@@ -11,6 +11,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import id.nearme.app.domain.repository.PostRepository
 import id.nearme.app.domain.repository.PostRepositoryImpl
+import id.nearme.app.domain.repository.UserRepository
+import id.nearme.app.domain.repository.UserRepositoryImpl
 import javax.inject.Singleton
 
 @Module
@@ -33,8 +35,17 @@ object AppModule {
     @Singleton
     fun providePostRepository(
         firestore: FirebaseFirestore,
-        auth: FirebaseAuth
+        auth: FirebaseAuth,
+        userRepository: UserRepository
     ): PostRepository {
-        return PostRepositoryImpl(firestore, auth)
+        return PostRepositoryImpl(firestore, auth, userRepository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserRepository(
+        auth: FirebaseAuth
+    ): UserRepository {
+        return UserRepositoryImpl(auth)
     }
 }

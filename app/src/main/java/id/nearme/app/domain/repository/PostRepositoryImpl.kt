@@ -4,7 +4,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.toObject
 import id.nearme.app.data.model.PostDto
 import id.nearme.app.data.model.toDomainModel
 import id.nearme.app.domain.model.Location
@@ -21,7 +20,8 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 class PostRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val userRepository: UserRepository
 ) : PostRepository {
 
     private val postsCollection = firestore.collection("posts")
@@ -36,7 +36,7 @@ class PostRepositoryImpl @Inject constructor(
                 id = postId,
                 content = content,
                 authorId = currentUser.uid,
-                authorName = currentUser.displayName ?: "Anonymous",
+                authorName = userRepository.getCurrentDisplayName(),
                 location = GeoPoint(location.latitude, location.longitude)
             )
 

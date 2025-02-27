@@ -10,6 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import id.nearme.app.presentation.location.LocationViewModel
 import id.nearme.app.presentation.nearby.NearbyScreen
 import id.nearme.app.presentation.newpost.NewPostScreen
+import id.nearme.app.presentation.profile.ProfileScreen
 import kotlinx.serialization.Serializable
 
 @Composable
@@ -31,6 +32,9 @@ fun AppNavigation(
                 onNavigateToNewPost = {
                     navController.navigate(route = Screen.NewPost)
                 },
+                onNavigateToProfile = {
+                    navController.navigate(route = Screen.Profile)
+                },
                 // Pass the shared locationViewModel
                 locationViewModel = locationViewModel
             )
@@ -40,7 +44,17 @@ fun AppNavigation(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
+                onNavigateToProfile = {
+                    navController.navigate(route = Screen.Profile)
+                },
                 locationViewModel = locationViewModel
+            )
+        }
+        composable<Screen.Profile> {
+            ProfileScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
             )
         }
     }
@@ -53,4 +67,7 @@ sealed class Screen {
 
     @Serializable
     data object NewPost : Screen()
+
+    @Serializable
+    data object Profile : Screen()
 }
