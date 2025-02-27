@@ -99,11 +99,8 @@ private fun formatDate(timestamp: Long): String {
 private fun formatDistance(distanceInMeters: Double?): String {
     if (distanceInMeters == null) return "Unknown distance"
 
-    return when {
-        distanceInMeters < 1000 -> "${distanceInMeters.toInt()} m away"
-        else -> {
-            val distanceInKm = distanceInMeters / 1000.0
-            String.format("%.1f km away", distanceInKm)
-        }
-    }
+    // Convert to kilometers and round up to the nearest integer
+    val distanceInKm = kotlin.math.ceil(distanceInMeters / 1000.0).toInt()
+
+    return "$distanceInKm km away"
 }
