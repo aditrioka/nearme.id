@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "973221920104",
+    "project_id": "nearme-id",
+    "storage_bucket": "nearme-id.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:973221920104:android:bc3a595ccbed8f7695eadd",
+        "android_client_info": {
+          "package_name": "id.nearme.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAFWXbZqCL_D3H0R9LfI04J3btZAprY7u4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
