@@ -6,6 +6,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import id.nearme.app.domain.model.Location
 import id.nearme.app.domain.repository.ChatRepository
 import id.nearme.app.domain.repository.PostRepository
+import id.nearme.app.domain.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,10 +18,15 @@ import javax.inject.Inject
 @HiltViewModel
 class NearbyViewModel @Inject constructor(
     private val postRepository: PostRepository,
-    private val chatRepository: ChatRepository
+    private val chatRepository: ChatRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(NearbyUiState())
+    private val _uiState = MutableStateFlow(
+        NearbyUiState(
+            currentUserId = userRepository.getCurrentUserId()
+        )
+    )
     val uiState: StateFlow<NearbyUiState> = _uiState.asStateFlow()
 
     private var currentUserLocation: Location? = null

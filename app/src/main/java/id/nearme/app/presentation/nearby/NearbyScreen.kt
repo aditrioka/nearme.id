@@ -417,6 +417,7 @@ private fun PostsListView(
                 items(uiState.posts) { post ->
                     PostCard(
                         post = post,
+                        isCurrentUser = post.authorId == uiState.currentUserId,
                         onChatClick = onChatClick,
                         onLikeClick = onLikeClick,
                         onReplyClick = onReplyClick

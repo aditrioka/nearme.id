@@ -7,5 +7,6 @@ data class Post(
     val authorName: String = "",
     val location: Location = Location(),
     val createdAt: Long = System.currentTimeMillis(),
-    val distanceInMeters: Double? = null
+    val distanceInMeters: Double? = null,
+    val isCurrentUserAuthor: Boolean = false
 )
