@@ -55,13 +55,13 @@ fun ChatDetailScreen(
     otherUserName: String,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ChatDetailViewModel = hiltViewModel(),
-    auth: FirebaseAuth = FirebaseAuth.getInstance()
+    viewModel: ChatDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentUserId = uiState.currentUserId
+
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
-    val currentUserId = auth.currentUser?.uid ?: ""
 
     // Mark messages as read when screen is opened
     LaunchedEffect(Unit) {

@@ -13,4 +13,6 @@ interface UserRepository {
     fun getCurrentDisplayName(): String
 
     fun isLoggedIn(): Boolean
+
+    fun getCurrentUserId(): String
 }

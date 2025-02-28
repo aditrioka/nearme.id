@@ -56,4 +56,8 @@ class UserRepositoryImpl @Inject constructor(
     override fun isLoggedIn(): Boolean {
         return auth.currentUser != null
     }
+
+    override fun getCurrentUserId(): String {
+        return auth.currentUser?.uid ?: ""
+    }
 }

@@ -12,5 +12,6 @@ data class ChatListUiState(
 data class ChatDetailUiState(
     val messages: List<Message> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val currentUserId: String = ""
 )

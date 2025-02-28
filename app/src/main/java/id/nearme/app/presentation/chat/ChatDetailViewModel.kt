@@ -20,7 +20,9 @@ class ChatDetailViewModel @Inject constructor(
     private val userRepository: UserRepository,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(ChatDetailUiState())
+    private val _uiState = MutableStateFlow(ChatDetailUiState(
+        currentUserId = userRepository.getCurrentUserId()
+    ))
     val uiState: StateFlow<ChatDetailUiState> = _uiState.asStateFlow()
 
     fun loadMessages(chatId: String) {

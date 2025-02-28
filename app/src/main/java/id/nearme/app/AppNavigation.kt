@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import id.nearme.app.presentation.chat.ChatDetailScreen
+import id.nearme.app.presentation.chat.ChatDetailUiState
 import id.nearme.app.presentation.chat.ChatListScreen
 import id.nearme.app.presentation.location.LocationViewModel
 import id.nearme.app.presentation.nearby.NearbyScreen
@@ -50,7 +51,6 @@ fun AppNavigation(
                     navController.navigate(Screen.ChatList)
                 },
                 onNavigateToChatDetail = { authorId, authorName ->
-                    // Navigate to the direct chat intermediary route
                     navController.navigate(Screen.ChatDetail(authorId, authorName))
                 },
                 // Pass the shared locationViewModel
@@ -86,39 +86,32 @@ fun AppNavigation(
             )
         }
         composable<Screen.ChatDetail> { backStackEntry ->
-            val chatDetail: Screen.ChatDetail = backStackEntry.toRoute()
+            val chatDetail = backStackEntry.toRoute<Screen.ChatDetail>()
             ChatDetailScreen(
                 chatId = chatDetail.chatId,
                 otherUserName = chatDetail.otherUserName,
                 onNavigateBack = { navController.popBackStack() }
             )
         }
-        
-        // Special route for initiating a direct chat from a post
-        composable(
-            route = "direct_chat/{authorId}/{authorName}",
-            arguments = listOf(
-                navArgument("authorId") { type = NavType.StringType },
-                navArgument("authorName") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
-            val authorId = backStackEntry.arguments?.getString("authorId") ?: ""
-            val authorName = backStackEntry.arguments?.getString("authorName") ?: ""
-            
+
+        // Direct chat intermediary screen for initiating a chat from a post
+        composable<Screen.DirectChat> { backStackEntry ->
+            val directChat = backStackEntry.toRoute<Screen.DirectChat>()
+
             // Get the shared nearby view model which already has chat repository access
             val viewModel: NearbyViewModel = hiltViewModel()
             
-            LaunchedEffect(authorId, authorName) {
+            LaunchedEffect(directChat.authorId, directChat.authorName) {
                 // Create chat or get existing chat, then navigate to chat detail screen
                 viewModel.createChatAndNavigateSync(
-                    otherUserId = authorId,
-                    otherUserName = authorName
+                    otherUserId = directChat.authorId,
+                    otherUserName = directChat.authorName
                 ) { chatId ->
                     // Navigate to the chat detail screen with the chat ID
                     if (chatId.isNotEmpty()) {
-                        navController.navigate("chat_detail/$chatId/$authorName") {
+                        navController.navigate(Screen.ChatDetail(chatId, directChat.authorName)) {
                             // Remove this intermediary route from the back stack
-                            popUpTo("direct_chat/{authorId}/{authorName}") { inclusive = true }
+                            popUpTo(Screen.DirectChat) { inclusive = true }
                         }
                     } else {
                         // If failed, go back to previous screen
