@@ -83,7 +83,17 @@ fun AppNavigation(
         ) { backStackEntry ->
             ChatDetailScreen(
                 onNavigateBack = {
-                    navController.popBackStack()
+                    // Go back to chat list instead of popping directly
+                    if (navController.previousBackStackEntry?.destination?.route == Screen.ChatList.toString()) {
+                        // If we came from chat list, just pop back
+                        navController.popBackStack()
+                    } else {
+                        // If we came from somewhere else (e.g., directly from NearbyScreen),
+                        // navigate to ChatList and then remove this screen from backstack
+                        navController.navigate(route = Screen.ChatList) {
+                            popUpTo("chat_detail/{chatId}/{otherUserName}") { inclusive = true }
+                        }
+                    }
                 }
             )
         }

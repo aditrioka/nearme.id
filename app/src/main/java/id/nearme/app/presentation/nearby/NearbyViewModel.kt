@@ -77,4 +77,27 @@ class NearbyViewModel @Inject constructor(
             }
         }
     }
+
+    fun startDirectChatWithUser(
+        otherUserId: String,
+        otherUserName: String,
+        onNavigateToChatList: () -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                // Create/get chat with this user
+                val chatResult = chatRepository.createChat(otherUserId, otherUserName)
+                
+                // First navigate to chat list
+                onNavigateToChatList()
+                
+                // Then we can implement direct navigation to the specific chat
+                // This will be handled in Navigation.kt via a shared NavigationViewModel
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(error = e.message ?: "Failed to create chat")
+                }
+            }
+        }
+    }
 }

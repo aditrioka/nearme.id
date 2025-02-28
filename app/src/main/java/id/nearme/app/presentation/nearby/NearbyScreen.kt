@@ -298,10 +298,10 @@ fun NearbyScreen(
                     uiState = nearbyUiState,
                     onRefresh = { nearbyViewModel.refresh() },
                     onChatClick = { authorId, authorName ->
-                        // Create a chat with this user
-                        nearbyViewModel.createChatAndNavigateSync(
+                        // Create a chat with this user and navigate directly to chat detail
+                        nearbyViewModel.startDirectChatWithUser(
                             authorId, 
-                            authorName, 
+                            authorName,
                             onNavigateToChat
                         )
                     },
