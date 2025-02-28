@@ -1,11 +1,7 @@
 package id.nearme.app.presentation.nearby
 
 import android.Manifest
-import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -36,11 +32,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -53,14 +47,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import id.nearme.app.domain.model.Location
 import id.nearme.app.presentation.components.PostCard
 import id.nearme.app.presentation.location.LocationState
@@ -77,7 +69,7 @@ fun NearbyScreen(
     onNavigateToNewPost: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToChat: () -> Unit,
-    onNavigateToDirectChat: (String, String) -> Unit,
+    onNavigateToChatDetail: (String, String) -> Unit,
     locationViewModel: LocationViewModel,
     modifier: Modifier = Modifier,
     nearbyViewModel: NearbyViewModel = hiltViewModel()
@@ -300,7 +292,7 @@ fun NearbyScreen(
                     onRefresh = { nearbyViewModel.refresh() },
                     onChatClick = { authorId, authorName ->
                         // Create a chat with this user and navigate directly to chat detail
-                        onNavigateToDirectChat(authorId, authorName)
+                        onNavigateToChatDetail(authorId, authorName)
                     },
                     onLikeClick = { postId ->
                         // TODO: Implement like functionality 

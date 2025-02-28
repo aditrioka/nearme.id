@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import id.nearme.app.presentation.chat.ChatDetailScreen
 import id.nearme.app.presentation.chat.ChatListScreen
 import id.nearme.app.presentation.location.LocationViewModel
@@ -48,8 +49,8 @@ fun AppNavigation(
                 onNavigateToChat = { 
                     navController.navigate(route = Screen.ChatList)
                 },
-                onNavigateToDirectChat = { authorId, authorName ->
-                    navController.navigate("direct_chat/$authorId/$authorName")
+                onNavigateToChatDetail = { authorId, authorName ->
+                    navController.navigate(route = Screen.ChatDetail(authorId, authorName))
                 },
                 // Pass the shared locationViewModel
                 locationViewModel = locationViewModel
@@ -79,31 +80,16 @@ fun AppNavigation(
                     navController.popBackStack()
                 },
                 onNavigateToChat = { chatId, otherUserName ->
-                    navController.navigate(route = "chat_detail/$chatId/$otherUserName")
+                    navController.navigate(route = Screen.ChatDetail(chatId, otherUserName))
                 }
             )
         }
-        composable(
-            route = "chat_detail/{chatId}/{otherUserName}",
-            arguments = listOf(
-                navArgument("chatId") { type = NavType.StringType },
-                navArgument("otherUserName") { type = NavType.StringType }
-            )
-        ) { backStackEntry ->
+        composable<Screen.ChatDetail> { backStackEntry ->
+            val chatDetail: Screen.ChatDetail = backStackEntry.toRoute()
             ChatDetailScreen(
-                onNavigateBack = {
-                    // Go back to chat list instead of popping directly
-                    if (navController.previousBackStackEntry?.destination?.route == Screen.ChatList.toString()) {
-                        // If we came from chat list, just pop back
-                        navController.popBackStack()
-                    } else {
-                        // If we came from somewhere else (e.g., directly from NearbyScreen),
-                        // navigate to ChatList and then remove this screen from backstack
-                        navController.navigate(route = Screen.ChatList) {
-                            popUpTo("chat_detail/{chatId}/{otherUserName}") { inclusive = true }
-                        }
-                    }
-                }
+                chatId = chatDetail.chatId,
+                otherUserName = chatDetail.otherUserName,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         
@@ -162,4 +148,10 @@ sealed class Screen {
     
     @Serializable
     data object ChatList : Screen()
+
+    @Serializable
+    data class ChatDetail(val chatId: String, val otherUserName: String) : Screen()
+
+    @Serializable
+    data class DirectChat(val authorId: String, val authorName: String) : Screen()
 }

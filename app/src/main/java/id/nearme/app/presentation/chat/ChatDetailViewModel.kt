@@ -18,21 +18,12 @@ import javax.inject.Inject
 class ChatDetailViewModel @Inject constructor(
     private val chatRepository: ChatRepository,
     private val userRepository: UserRepository,
-    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val chatId: String = checkNotNull(savedStateHandle["chatId"])
-    private val otherUserName: String = checkNotNull(savedStateHandle["otherUserName"])
-
-    private val _uiState = MutableStateFlow(ChatDetailUiState(chatId = chatId, otherUserName = otherUserName))
+    private val _uiState = MutableStateFlow(ChatDetailUiState())
     val uiState: StateFlow<ChatDetailUiState> = _uiState.asStateFlow()
 
-    init {
-        loadMessages()
-        markMessagesAsRead()
-    }
-
-    private fun loadMessages() {
+    fun loadMessages(chatId: String) {
         viewModelScope.launch {
             try {
                 _uiState.update { it.copy(isLoading = true) }
@@ -57,7 +48,7 @@ class ChatDetailViewModel @Inject constructor(
         }
     }
 
-    fun sendMessage(content: String) {
+    fun sendMessage(chatId: String, content: String) {
         if (content.isBlank()) return
         
         viewModelScope.launch {
@@ -71,7 +62,7 @@ class ChatDetailViewModel @Inject constructor(
         }
     }
 
-    fun markMessagesAsRead() {
+    fun markMessagesAsRead(chatId: String) {
         viewModelScope.launch {
             try {
                 chatRepository.markMessagesAsRead(chatId)

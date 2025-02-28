@@ -51,6 +51,8 @@ import javax.inject.Inject
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatDetailScreen(
+    chatId: String,
+    otherUserName: String,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ChatDetailViewModel = hiltViewModel(),
@@ -63,7 +65,8 @@ fun ChatDetailScreen(
 
     // Mark messages as read when screen is opened
     LaunchedEffect(Unit) {
-        viewModel.markMessagesAsRead()
+        viewModel.loadMessages(chatId)
+        viewModel.markMessagesAsRead(chatId)
     }
 
     // Scroll to bottom when new messages arrive
@@ -75,14 +78,14 @@ fun ChatDetailScreen(
 
     // Mark messages as read when screen is in foreground
     DisposableEffect(Unit) {
-        viewModel.markMessagesAsRead()
+        viewModel.markMessagesAsRead(chatId)
         onDispose { }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(uiState.otherUserName) },
+                title = { Text(otherUserName) },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -112,7 +115,7 @@ fun ChatDetailScreen(
                 IconButton(
                     onClick = {
                         if (messageText.isNotBlank()) {
-                            viewModel.sendMessage(messageText)
+                            viewModel.sendMessage(chatId, messageText)
                             messageText = ""
                         }
                     }
