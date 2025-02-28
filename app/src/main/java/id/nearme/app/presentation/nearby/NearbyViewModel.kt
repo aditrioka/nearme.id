@@ -77,6 +77,28 @@ class NearbyViewModel @Inject constructor(
             }
         }
     }
+    
+    /**
+     * Creates a chat with another user and returns the chat ID for direct navigation
+     */
+    fun createChatAndNavigateSync(
+        otherUserId: String,
+        otherUserName: String,
+        onChatCreated: (String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val chatResult = chatRepository.createChat(otherUserId, otherUserName)
+                val chatId = chatResult.getOrNull()?.id ?: ""
+                onChatCreated(chatId)
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(error = e.message ?: "Failed to create chat")
+                }
+                onChatCreated("")
+            }
+        }
+    }
 
     fun startDirectChatWithUser(
         otherUserId: String,
@@ -88,11 +110,9 @@ class NearbyViewModel @Inject constructor(
                 // Create/get chat with this user
                 val chatResult = chatRepository.createChat(otherUserId, otherUserName)
                 
-                // First navigate to chat list
+                // Navigate to chat list, which will handle deep-linking to the specific chat
+                // The direct navigation to chat detail will be handled in Navigation.kt
                 onNavigateToChatList()
-                
-                // Then we can implement direct navigation to the specific chat
-                // This will be handled in Navigation.kt via a shared NavigationViewModel
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(error = e.message ?: "Failed to create chat")

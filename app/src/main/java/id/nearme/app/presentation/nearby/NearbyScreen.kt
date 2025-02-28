@@ -77,6 +77,7 @@ fun NearbyScreen(
     onNavigateToNewPost: () -> Unit,
     onNavigateToProfile: () -> Unit,
     onNavigateToChat: () -> Unit,
+    onNavigateToDirectChat: (String, String) -> Unit,
     locationViewModel: LocationViewModel,
     modifier: Modifier = Modifier,
     nearbyViewModel: NearbyViewModel = hiltViewModel()
@@ -299,11 +300,7 @@ fun NearbyScreen(
                     onRefresh = { nearbyViewModel.refresh() },
                     onChatClick = { authorId, authorName ->
                         // Create a chat with this user and navigate directly to chat detail
-                        nearbyViewModel.startDirectChatWithUser(
-                            authorId, 
-                            authorName,
-                            onNavigateToChat
-                        )
+                        onNavigateToDirectChat(authorId, authorName)
                     },
                     onLikeClick = { postId ->
                         // TODO: Implement like functionality 

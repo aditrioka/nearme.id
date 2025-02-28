@@ -1,6 +1,11 @@
 package id.nearme.app
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -13,6 +18,7 @@ import id.nearme.app.presentation.chat.ChatDetailScreen
 import id.nearme.app.presentation.chat.ChatListScreen
 import id.nearme.app.presentation.location.LocationViewModel
 import id.nearme.app.presentation.nearby.NearbyScreen
+import id.nearme.app.presentation.nearby.NearbyViewModel
 import id.nearme.app.presentation.newpost.NewPostScreen
 import id.nearme.app.presentation.profile.ProfileScreen
 import kotlinx.serialization.Serializable
@@ -39,8 +45,11 @@ fun AppNavigation(
                 onNavigateToProfile = {
                     navController.navigate(route = Screen.Profile)
                 },
-                onNavigateToChat = {
+                onNavigateToChat = { 
                     navController.navigate(route = Screen.ChatList)
+                },
+                onNavigateToDirectChat = { authorId, authorName ->
+                    navController.navigate("direct_chat/$authorId/$authorName")
                 },
                 // Pass the shared locationViewModel
                 locationViewModel = locationViewModel
@@ -96,6 +105,46 @@ fun AppNavigation(
                     }
                 }
             )
+        }
+        
+        // Special route for initiating a direct chat from a post
+        composable(
+            route = "direct_chat/{authorId}/{authorName}",
+            arguments = listOf(
+                navArgument("authorId") { type = NavType.StringType },
+                navArgument("authorName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val authorId = backStackEntry.arguments?.getString("authorId") ?: ""
+            val authorName = backStackEntry.arguments?.getString("authorName") ?: ""
+            
+            // Get the shared nearby view model which already has chat repository access
+            val viewModel: NearbyViewModel = hiltViewModel()
+            
+            LaunchedEffect(authorId, authorName) {
+                // Navigate to the chat detail screen
+                // This temporarily navigates to a loading screen while the chat is being created
+                viewModel.createChatAndNavigateSync(
+                    otherUserId = authorId,
+                    otherUserName = authorName
+                ) { chatId ->
+                    // Navigate to the chat detail screen with the chat ID
+                    if (chatId.isNotEmpty()) {
+                        navController.navigate("chat_detail/$chatId/$authorName") {
+                            // Remove this intermediary route from the back stack
+                            popUpTo("direct_chat/{authorId}/{authorName}") { inclusive = true }
+                        }
+                    } else {
+                        // If failed, go back to previous screen
+                        navController.popBackStack()
+                    }
+                }
+            }
+            
+            // Show loading indicator
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
         }
     }
 }
