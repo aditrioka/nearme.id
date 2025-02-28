@@ -42,16 +42,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.firebase.auth.FirebaseAuth
 import id.nearme.app.domain.model.Message
 import id.nearme.app.util.formatTime
 import java.util.Date
-import javax.inject.Inject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatDetailScreen(
-    chatId: String,
+    chatId: String? = null,
+    otherUserId: String? = null,
     otherUserName: String,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier,
@@ -63,10 +62,10 @@ fun ChatDetailScreen(
     var messageText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
 
-    // Mark messages as read when screen is opened
+    // Initialize the chat when screen is opened
     LaunchedEffect(Unit) {
-        viewModel.loadMessages(chatId)
-        viewModel.markMessagesAsRead(chatId)
+        viewModel.initialize(chatId, otherUserId, otherUserName)
+        viewModel.markMessagesAsRead()
     }
 
     // Scroll to bottom when new messages arrive
@@ -78,7 +77,7 @@ fun ChatDetailScreen(
 
     // Mark messages as read when screen is in foreground
     DisposableEffect(Unit) {
-        viewModel.markMessagesAsRead(chatId)
+        viewModel.markMessagesAsRead()
         onDispose { }
     }
 
@@ -115,7 +114,7 @@ fun ChatDetailScreen(
                 IconButton(
                     onClick = {
                         if (messageText.isNotBlank()) {
-                            viewModel.sendMessage(chatId, messageText)
+                            viewModel.sendMessage(messageText)
                             messageText = ""
                         }
                     }

@@ -1,6 +1,5 @@
 package id.nearme.app.presentation.chat
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -24,8 +23,62 @@ class ChatDetailViewModel @Inject constructor(
         currentUserId = userRepository.getCurrentUserId()
     ))
     val uiState: StateFlow<ChatDetailUiState> = _uiState.asStateFlow()
+    
+    // Chat ID resolved from navigation or from finding/creating a chat
+    private var resolvedChatId: String? = null
 
-    fun loadMessages(chatId: String) {
+    /**
+     * Initialize chat - either directly with chat ID or by finding/creating a chat with otherUserId
+     */
+    fun initialize(chatId: String? = null, otherUserId: String? = null, otherUserName: String? = null) {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoading = true) }
+                
+                // If we already have a chat ID, use it directly
+                if (!chatId.isNullOrEmpty()) {
+                    resolvedChatId = chatId
+                    loadMessages(chatId)
+                    return@launch
+                }
+                
+                // Otherwise try to find or create a chat with the other user
+                if (!otherUserId.isNullOrEmpty() && !otherUserName.isNullOrEmpty()) {
+                    // First check if a chat already exists with this user
+                    val existingChatResult = chatRepository.getChatWithUser(otherUserId)
+                    val existingChat = existingChatResult.getOrNull()
+                    
+                    if (existingChat != null) {
+                        // Chat already exists, use it
+                        resolvedChatId = existingChat.id
+                        loadMessages(existingChat.id)
+                    } else {
+                        // Create a new chat
+                        val newChatResult = chatRepository.createChat(otherUserId, otherUserName)
+                        val newChat = newChatResult.getOrThrow()
+                        resolvedChatId = newChat.id
+                        loadMessages(newChat.id)
+                    }
+                } else {
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false,
+                            error = "Missing required parameters for chat initialization"
+                        ) 
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to initialize chat"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun loadMessages(chatId: String) {
         viewModelScope.launch {
             try {
                 _uiState.update { it.copy(isLoading = true) }
@@ -50,12 +103,12 @@ class ChatDetailViewModel @Inject constructor(
         }
     }
 
-    fun sendMessage(chatId: String, content: String) {
-        if (content.isBlank()) return
+    fun sendMessage(content: String) {
+        if (content.isBlank() || resolvedChatId.isNullOrEmpty()) return
         
         viewModelScope.launch {
             try {
-                chatRepository.sendMessage(chatId, content)
+                chatRepository.sendMessage(resolvedChatId!!, content)
             } catch (e: Exception) {
                 _uiState.update {
                     it.copy(error = e.message ?: "Failed to send message")
@@ -64,10 +117,12 @@ class ChatDetailViewModel @Inject constructor(
         }
     }
 
-    fun markMessagesAsRead(chatId: String) {
+    fun markMessagesAsRead() {
+        if (resolvedChatId.isNullOrEmpty()) return
+        
         viewModelScope.launch {
             try {
-                chatRepository.markMessagesAsRead(chatId)
+                chatRepository.markMessagesAsRead(resolvedChatId!!)
             } catch (e: Exception) {
                 // Silently fail, this is not critical
             }
