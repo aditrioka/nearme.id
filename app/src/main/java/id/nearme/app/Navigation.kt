@@ -41,16 +41,17 @@ fun AppNavigation(
         composable<Screen.Nearby> {
             NearbyScreen(
                 onNavigateToNewPost = {
-                    navController.navigate(route = Screen.NewPost)
+                    navController.navigate(Screen.NewPost)
                 },
                 onNavigateToProfile = {
-                    navController.navigate(route = Screen.Profile)
+                    navController.navigate(Screen.Profile)
                 },
                 onNavigateToChat = { 
-                    navController.navigate(route = Screen.ChatList)
+                    navController.navigate(Screen.ChatList)
                 },
                 onNavigateToChatDetail = { authorId, authorName ->
-                    navController.navigate(route = Screen.ChatDetail(authorId, authorName))
+                    // Navigate to the direct chat intermediary route
+                    navController.navigate(Screen.ChatDetail(authorId, authorName))
                 },
                 // Pass the shared locationViewModel
                 locationViewModel = locationViewModel
@@ -108,8 +109,7 @@ fun AppNavigation(
             val viewModel: NearbyViewModel = hiltViewModel()
             
             LaunchedEffect(authorId, authorName) {
-                // Navigate to the chat detail screen
-                // This temporarily navigates to a loading screen while the chat is being created
+                // Create chat or get existing chat, then navigate to chat detail screen
                 viewModel.createChatAndNavigateSync(
                     otherUserId = authorId,
                     otherUserName = authorName

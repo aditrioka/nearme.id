@@ -60,26 +60,15 @@ class NearbyViewModel @Inject constructor(
             loadNearbyPosts(it)
         }
     }
-    
-    fun createChatAndNavigateSync(
-        otherUserId: String,
-        otherUserName: String,
-        onNavigate: () -> Unit
-    ) {
-        viewModelScope.launch {
-            try {
-                chatRepository.createChat(otherUserId, otherUserName)
-                onNavigate()
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(error = e.message ?: "Failed to create chat")
-                }
-            }
-        }
-    }
-    
+
     /**
-     * Creates a chat with another user and returns the chat ID for direct navigation
+     * Creates a chat with another user or returns existing chat, and navigates to chat detail screen.
+     * This function first checks if a chat with the given user already exists,
+     * and creates a new one if it doesn't.
+     *
+     * @param otherUserId ID of the user to chat with
+     * @param otherUserName Display name of the user to chat with
+     * @param onChatCreated Callback with chat ID to navigate to chat detail screen
      */
     fun createChatAndNavigateSync(
         otherUserId: String,
@@ -88,35 +77,31 @@ class NearbyViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             try {
-                val chatResult = chatRepository.createChat(otherUserId, otherUserName)
-                val chatId = chatResult.getOrNull()?.id ?: ""
-                onChatCreated(chatId)
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(error = e.message ?: "Failed to create chat")
-                }
-                onChatCreated("")
-            }
-        }
-    }
+                _uiState.update { it.copy(isLoading = true) }
 
-    fun startDirectChatWithUser(
-        otherUserId: String,
-        otherUserName: String,
-        onNavigateToChatList: () -> Unit
-    ) {
-        viewModelScope.launch {
-            try {
-                // Create/get chat with this user
-                val chatResult = chatRepository.createChat(otherUserId, otherUserName)
-                
-                // Navigate to chat list, which will handle deep-linking to the specific chat
-                // The direct navigation to chat detail will be handled in Navigation.kt
-                onNavigateToChatList()
+                // First check if a chat already exists with this user
+                val existingChatResult = chatRepository.getChatWithUser(otherUserId)
+                val existingChat = existingChatResult.getOrNull()
+
+                if (existingChat != null) {
+                    // Chat already exists, navigate to it
+                    onChatCreated(existingChat.id)
+                } else {
+                    // Create a new chat
+                    val chatResult = chatRepository.createChat(otherUserId, otherUserName)
+                    val chatId = chatResult.getOrNull()?.id ?: ""
+                    onChatCreated(chatId)
+                }
+
+                _uiState.update { it.copy(isLoading = false) }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(error = e.message ?: "Failed to create chat")
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to create or find chat"
+                    )
                 }
+                onChatCreated("") // Empty string indicates failure
             }
         }
     }

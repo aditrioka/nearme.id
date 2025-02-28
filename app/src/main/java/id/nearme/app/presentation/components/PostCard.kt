@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Reply
@@ -160,13 +161,13 @@ fun PostCard(
                     )
                 }
                 
-                // Chat button
+                // Chat button - Pass author ID and name to the callback
                 IconButton(
                     onClick = { onChatClick(post.authorId, post.authorName) }
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Chat,
-                        contentDescription = "Chat"
+                        imageVector = Icons.AutoMirrored.Filled.Chat,
+                        contentDescription = "Chat with ${post.authorName}"
                     )
                 }
             }
