@@ -4,9 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import id.nearme.app.presentation.chat.ChatDetailScreen
+import id.nearme.app.presentation.chat.ChatListScreen
 import id.nearme.app.presentation.location.LocationViewModel
 import id.nearme.app.presentation.nearby.NearbyScreen
 import id.nearme.app.presentation.newpost.NewPostScreen
@@ -35,6 +39,9 @@ fun AppNavigation(
                 onNavigateToProfile = {
                     navController.navigate(route = Screen.Profile)
                 },
+                onNavigateToChat = {
+                    navController.navigate(route = Screen.ChatList)
+                },
                 // Pass the shared locationViewModel
                 locationViewModel = locationViewModel
             )
@@ -57,6 +64,29 @@ fun AppNavigation(
                 }
             )
         }
+        composable<Screen.ChatList> {
+            ChatListScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                },
+                onNavigateToChat = { chatId, otherUserName ->
+                    navController.navigate(route = "chat_detail/$chatId/$otherUserName")
+                }
+            )
+        }
+        composable(
+            route = "chat_detail/{chatId}/{otherUserName}",
+            arguments = listOf(
+                navArgument("chatId") { type = NavType.StringType },
+                navArgument("otherUserName") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            ChatDetailScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
     }
 }
 
@@ -70,4 +100,7 @@ sealed class Screen {
 
     @Serializable
     data object Profile : Screen()
+    
+    @Serializable
+    data object ChatList : Screen()
 }

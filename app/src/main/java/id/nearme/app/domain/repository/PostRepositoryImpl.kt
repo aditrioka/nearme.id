@@ -81,7 +81,7 @@ class PostRepositoryImpl @Inject constructor(
                         } else null
                     }.filterNotNull()
 
-                    trySend(nearbyPosts.sortedBy { it.distanceInMeters })
+                    trySend(nearbyPosts)
                 }
             }
 

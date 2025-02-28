@@ -9,6 +9,8 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import id.nearme.app.domain.repository.ChatRepository
+import id.nearme.app.domain.repository.ChatRepositoryImpl
 import id.nearme.app.domain.repository.PostRepository
 import id.nearme.app.domain.repository.PostRepositoryImpl
 import id.nearme.app.domain.repository.UserRepository
@@ -47,5 +49,15 @@ object AppModule {
         auth: FirebaseAuth
     ): UserRepository {
         return UserRepositoryImpl(auth)
+    }
+    
+    @Provides
+    @Singleton
+    fun provideChatRepository(
+        firestore: FirebaseFirestore,
+        auth: FirebaseAuth,
+        userRepository: UserRepository
+    ): ChatRepository {
+        return ChatRepositoryImpl(firestore, auth, userRepository)
     }
 }

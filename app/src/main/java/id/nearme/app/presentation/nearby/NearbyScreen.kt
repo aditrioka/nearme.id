@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
@@ -75,6 +76,7 @@ import kotlinx.coroutines.launch
 fun NearbyScreen(
     onNavigateToNewPost: () -> Unit,
     onNavigateToProfile: () -> Unit,
+    onNavigateToChat: () -> Unit,
     locationViewModel: LocationViewModel,
     modifier: Modifier = Modifier,
     nearbyViewModel: NearbyViewModel = hiltViewModel()
@@ -233,6 +235,14 @@ fun NearbyScreen(
                             contentDescription = "Profile"
                         )
                     }
+                    
+                    // Chat button
+                    IconButton(onClick = onNavigateToChat) {
+                        Icon(
+                            imageVector = Icons.Filled.Chat,
+                            contentDescription = "Chat"
+                        )
+                    }
 
                     if (locationState is LocationState.Success) {
                         IconButton(onClick = {
@@ -287,6 +297,20 @@ fun NearbyScreen(
                 PostsListView(
                     uiState = nearbyUiState,
                     onRefresh = { nearbyViewModel.refresh() },
+                    onChatClick = { authorId, authorName ->
+                        // Create a chat with this user
+                        nearbyViewModel.createChatAndNavigateSync(
+                            authorId, 
+                            authorName, 
+                            onNavigateToChat
+                        )
+                    },
+                    onLikeClick = { postId ->
+                        // TODO: Implement like functionality 
+                    },
+                    onReplyClick = { postId ->
+                        // TODO: Implement reply functionality
+                    },
                     listState = listState,
                     modifier = Modifier.padding(innerPadding)
                 )
@@ -359,6 +383,9 @@ private fun ErrorView(
 private fun PostsListView(
     uiState: NearbyUiState,
     onRefresh: () -> Unit,
+    onChatClick: (String, String) -> Unit,
+    onLikeClick: (String) -> Unit,
+    onReplyClick: (String) -> Unit,
     listState: LazyListState,
     modifier: Modifier = Modifier
 ) {
@@ -398,7 +425,12 @@ private fun PostsListView(
                 }
 
                 items(uiState.posts) { post ->
-                    PostCard(post = post)
+                    PostCard(
+                        post = post,
+                        onChatClick = onChatClick,
+                        onLikeClick = onLikeClick,
+                        onReplyClick = onReplyClick
+                    )
                 }
             }
         }

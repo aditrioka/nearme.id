@@ -1,11 +1,10 @@
-package id.nearme.app.presentation.nearby
+package id.nearme.app.presentation.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import id.nearme.app.domain.model.Location
 import id.nearme.app.domain.repository.ChatRepository
-import id.nearme.app.domain.repository.PostRepository
+import id.nearme.app.domain.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,30 +14,27 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class NearbyViewModel @Inject constructor(
-    private val postRepository: PostRepository,
-    private val chatRepository: ChatRepository
+class ChatListViewModel @Inject constructor(
+    private val chatRepository: ChatRepository,
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(NearbyUiState())
-    val uiState: StateFlow<NearbyUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(ChatListUiState())
+    val uiState: StateFlow<ChatListUiState> = _uiState.asStateFlow()
 
-    private var currentUserLocation: Location? = null
-
-    fun updateLocation(location: Location) {
-        currentUserLocation = location
-        loadNearbyPosts(location)
+    init {
+        loadChats()
     }
 
-    private fun loadNearbyPosts(location: Location) {
+    private fun loadChats() {
         viewModelScope.launch {
             try {
                 _uiState.update { it.copy(isLoading = true) }
-
-                postRepository.getNearbyPosts(location).collectLatest { posts ->
+                
+                chatRepository.getUserChats().collectLatest { chats ->
                     _uiState.update {
                         it.copy(
-                            posts = posts,
+                            chats = chats,
                             isLoading = false,
                             error = null
                         )
@@ -48,7 +44,24 @@ class NearbyViewModel @Inject constructor(
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to load nearby posts"
+                        error = e.message ?: "Failed to load chats"
+                    )
+                }
+            }
+        }
+    }
+
+    fun createChat(otherUserId: String, otherUserName: String) {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoading = true) }
+                chatRepository.createChat(otherUserId, otherUserName)
+                _uiState.update { it.copy(isLoading = false) }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to create chat"
                     )
                 }
             }
@@ -56,25 +69,6 @@ class NearbyViewModel @Inject constructor(
     }
 
     fun refresh() {
-        currentUserLocation?.let {
-            loadNearbyPosts(it)
-        }
-    }
-    
-    fun createChatAndNavigateSync(
-        otherUserId: String,
-        otherUserName: String,
-        onNavigate: () -> Unit
-    ) {
-        viewModelScope.launch {
-            try {
-                chatRepository.createChat(otherUserId, otherUserName)
-                onNavigate()
-            } catch (e: Exception) {
-                _uiState.update {
-                    it.copy(error = e.message ?: "Failed to create chat")
-                }
-            }
-        }
+        loadChats()
     }
 }
