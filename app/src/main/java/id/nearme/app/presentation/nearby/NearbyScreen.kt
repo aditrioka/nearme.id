@@ -338,12 +338,6 @@ private fun ErrorView(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Nearby Posts",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        Text(
             text = "Error: $message",
             modifier = Modifier.padding(horizontal = 24.dp),
             textAlign = TextAlign.Center
@@ -406,14 +400,6 @@ private fun PostsListView(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                item {
-                    Text(
-                        text = "Nearby Posts",
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = Modifier.padding(bottom = 16.dp)
-                    )
-                }
-
                 items(uiState.posts) { post ->
                     PostCard(
                         post = post,
